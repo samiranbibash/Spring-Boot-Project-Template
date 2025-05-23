@@ -3,6 +3,7 @@ package com.tutorial.spring.controller;
 import com.tutorial.spring.constants.StringConstants;
 import com.tutorial.spring.dto.user.UserDTO;
 import com.tutorial.spring.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class UserController extends BaseController {
     private final UserService userService;
 
     @PostMapping("/saveUser")
-    public ResponseEntity<?> saveUser(@RequestBody UserDTO userDTO) {
+    public ResponseEntity<?> saveUser(@Valid @RequestBody UserDTO userDTO) {
         UserDTO savedUser = userService.registerUser(userDTO);
         return new ResponseEntity<>(successCreate(StringConstants.USER, savedUser), HttpStatus.OK);
     }
