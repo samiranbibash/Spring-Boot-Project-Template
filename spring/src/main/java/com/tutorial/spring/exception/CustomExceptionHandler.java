@@ -3,11 +3,9 @@ package com.tutorial.spring.exception;
 import com.tutorial.spring.config.CustomMessageSource;
 import com.tutorial.spring.constants.ErrorCodeConstants;
 import com.tutorial.spring.constants.FieldErrorConstant;
-import com.tutorial.spring.dto.exception.ApiError;
 import com.tutorial.spring.dto.exception.GlobalExceptionResponse;
 import com.tutorial.spring.enums.ResponseStatus;
 import com.tutorial.spring.utils.Capital;
-import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -34,6 +32,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     public CustomExceptionHandler(CustomMessageSource customMessageSource) {
         this.customMessageSource = customMessageSource;
     }
+
     private GlobalExceptionResponse genericWithMessage(HttpStatus httpStatus, String message, String error) {
         return new GlobalExceptionResponse(ResponseStatus.FAILURE, httpStatus.value(), message, error);
     }
@@ -45,13 +44,15 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
     private GlobalExceptionResponse genericWithMessage(int httpStatusCode, String message, String error) {
         return new GlobalExceptionResponse(ResponseStatus.FAILURE, httpStatusCode, message, error);
     }
+
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         logger.error(ex.getClass().getName());
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-        final ApiError apiError = new ApiError(ResponseStatus.FAILURE, httpStatus.value(), ex.getMessage(), ex.getMessage());
+        final GlobalExceptionResponse apiError = new GlobalExceptionResponse(ResponseStatus.FAILURE, httpStatus.value(), ex.getMessage(), ex.getMessage());
         return handleExceptionInternal(ex, apiError, headers, httpStatus, request);
     }
+
     @Override
     @ResponseBody
     protected ResponseEntity<Object> handleMethodArgumentNotValid(final MethodArgumentNotValidException ex, final HttpHeaders headers, final HttpStatusCode status, final WebRequest request) {
@@ -124,7 +125,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
                     errors.add(customMessageSource.get(FieldErrorConstant.LENGTH, errorArguments[1], errorArguments[2]));
                     break;
                 case ErrorCodeConstants.PATTERN:
-                    errors.add(customMessageSource.get(FieldErrorConstant.PATTERN,errorField,errorArguments[2]));
+                    errors.add(customMessageSource.get(FieldErrorConstant.PATTERN, errorField, errorArguments[2]));
                     break;
                 default:
                     errors.add(errorFieldValidationCode + " " + defaultMessage);
@@ -133,7 +134,8 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
             errors.add(errorFieldValidationCode + " " + defaultMessage);
         }
     }
-    private ApiError handleBeanValidationException(MethodArgumentNotValidException ex, BindException ex1) {
+
+    private GlobalExceptionResponse handleBeanValidationException(MethodArgumentNotValidException ex, BindException ex1) {
         logger.error(ex == null ? ex1.getClass().getName() : ex.getClass().getName());
         List<FieldError> fieldErrors = ex == null ? ex1.getBindingResult().getFieldErrors() : ex.getBindingResult().getFieldErrors();
 
@@ -146,7 +148,7 @@ public class CustomExceptionHandler extends ResponseEntityExceptionHandler {
             errors.add(error.getObjectName() + ": " + error.getDefaultMessage());
         }
         HttpStatus httpStatus = HttpStatus.BAD_REQUEST;
-        return new ApiError(ResponseStatus.FAILURE, httpStatus.value(), message, errors);
+        return new GlobalExceptionResponse(ResponseStatus.FAILURE, httpStatus.value(), message, errors);
     }
 
     String beanValidationExceptionMessage(FieldError error, String message, List<String> errors) {
