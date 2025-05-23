@@ -5,6 +5,7 @@ import com.tutorial.spring.entity.User;
 import com.tutorial.spring.repo.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,15 +19,19 @@ import java.util.List;
 public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
-        return getUser(user);
-    }
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
-    private org.springframework.security.core.userdetails.User getUser(User user) {
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        String role = user.getRole();
+        if (role != null && !role.trim().isEmpty()) {
+            String formattedRole = "ROLE_" + role.trim().toUpperCase();
+            authorities.add(new SimpleGrantedAuthority(formattedRole));
+        }
+
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
                 user.getPassword(),
@@ -34,7 +39,8 @@ public class CustomUserDetailsService implements UserDetailsService {
                 true,
                 true,
                 true,
-                grantedAuthorities
+                authorities
         );
     }
 }
+

@@ -30,5 +30,5 @@ public class UserDTO {
     @NotNull(message = FieldErrorConstant.NOT_NULL)
     @NotBlank(message = FieldErrorConstant.NOT_BLANK)
     private String mobileNumber;
-    private String roles;
+    private String role;
 }

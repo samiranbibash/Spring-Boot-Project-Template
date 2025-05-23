@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
                 .email(userDTO.getEmail())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
                 .mobileNumber(userDTO.getMobileNumber())
-                .roles(userDTO.getRoles())
+                .role(userDTO.getRole())
                 .build();
         return toDTO(userRepository.save(user));
     }
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .password(user.getPassword())
                 .mobileNumber(user.getMobileNumber())
-                .roles(user.getRoles())
+                .role(user.getRole())
                 .build();
     }
 }
